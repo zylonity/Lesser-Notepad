@@ -2,17 +2,14 @@
 #define UNICODE
 #endif 
 
-#include <windows.h>
-#include <iostream>
-#include <fstream>
-#include <string>
+#include <windows.h> //imports the windows library, i think.
+#include <iostream> //deals with opening, reading and writing file
+#include <fstream> //specifies that I want to both read and write a file
+#include <string> //i have no idea why this is in here
 
 using namespace std;
 wstring line;
 wfstream inputFile;
-
-//int lineIndex = 0;
-//wstring lines[3];
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -53,8 +50,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     ShowWindow(hwnd, nCmdShow);
 
-    // Run the message loop.
-
+    // Messages are what the OS receives in input, so this deals with what the app is doing, if you change the size, or if you type something in.
     MSG msg = { };
     while (GetMessage(&msg, NULL, 0, 0))
     {
@@ -73,18 +69,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         return 0;
 
-    case WM_PAINT:
+    case WM_PAINT: //in charge of painting the window, everything that goes in the window goes here
         {
             PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
+            HDC hdc = BeginPaint(hwnd, &ps); //the screen i think?
 
+            //Puts a white background that updates with the window
+            FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1)); //COLOR_WINDOW is the default windows colours, adding sorts through them
             
-            FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
-            
-            wstring test;
-            inputFile.open("Text.txt"); 
+            wstring test; 
+            inputFile.open("Text.txt"); // opens text file 
             if (inputFile.is_open()) {
-                while (getline(inputFile, line))
+                while (getline(inputFile, line)) //gets every line of the txt file, and loads it onto a wide string
                 {
                     test = test + L'\n' + line;
                 }
@@ -94,11 +90,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 inputFile.close();
             }
             
-            LPCWSTR temp = test.c_str();
-            SetTextColor(hdc, 0x00000000);
-            RECT MyRect;
-            GetClientRect(hwnd, &MyRect);
-            DrawText(
+            LPCWSTR temp = test.c_str(); //converts the wide string into a LPCWSTR
+            SetTextColor(hdc, 0x00000000); // sets colour to black
+            RECT MyRect; // makes a rectangle inside the window that text and things can go into
+            GetClientRect(hwnd, &MyRect); //gets the rectangle and sets it to be the size of 
+            DrawText( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
                 hdc,
                 temp,
                 -1,
@@ -108,7 +104,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
            
 
-            EndPaint(hwnd, &ps);
+            EndPaint(hwnd, &ps); // finished painting the window
             return 0;
         }
         
