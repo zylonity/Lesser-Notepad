@@ -8,11 +8,11 @@
 #include <string>
 
 using namespace std;
-string line;
-fstream inputFile;
+wstring line;
+wfstream inputFile;
 
-int lineIndex = 0;
-string lines[3];
+//int lineIndex = 0;
+//wstring lines[3];
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -81,17 +81,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             
             FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
             
-            string test;
-            inputFile.open("TextFile1.txt"); 
+            wstring test;
+            inputFile.open("Text.txt"); 
             if (inputFile.is_open()) {
                 while (getline(inputFile, line))
                 {
-                    test = test + '\n' + line;
+                    test = test + L'\n' + line;
                 }
 
             }
-            wstring stemp = wstring(test.begin(), test.end());
-            LPCWSTR temp = stemp.c_str();
+            else {
+                inputFile.close();
+            }
+            
+            LPCWSTR temp = test.c_str();
             SetTextColor(hdc, 0x00000000);
             RECT MyRect;
             GetClientRect(hwnd, &MyRect);
@@ -106,8 +109,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
            
 
             EndPaint(hwnd, &ps);
+            return 0;
         }
-        return 0;
+        
 
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
