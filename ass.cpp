@@ -15,7 +15,7 @@ wstring line;
 wfstream inputFile;
 wstring textString;
 
-RECT MyRect; // makes a rectangle inside the window that text and things can go into
+RECT myRect; // makes a rectangle inside the window that text and things can go into
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -100,13 +100,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         SetTextColor(hdc, 0x00000000); // sets colour to black
-
-        GetClientRect(hwnd, &MyRect); //gets the rectangle and sets it to be the size of 
+        
+        GetClientRect(hwnd, &myRect); //gets the rectangle and sets it to be the size of 
         DrawTextExW( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
             hdc,
             &textString[0], //WhY DOES THIS WORK TO CONVERT A WSTRING INTO A LPWSTR
             -1,
-            &MyRect,
+            &myRect,
             DT_TOP | DT_WORDBREAK | DT_LEFT,
             NULL
         );
@@ -124,7 +124,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (textString.length() != 0) { //failsafe so you don't delete more characters than it has
                 textString.erase(textString.length() - 1); //deletes 1 character
-                InvalidateRect(hwnd, &MyRect, true); //refreshes rect
+                InvalidateRect(hwnd, &myRect, true); //refreshes rect
             }
         }
         default:
@@ -132,7 +132,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CString charInput((wchar_t)wParam); //INPUT TO CSTRING, IDK WHAT IT DOES STILL
                 wstring wCharInput(charInput);//CString to Wstring, i mean it works
                 textString = textString + wCharInput; //adds character
-                InvalidateRect(hwnd, &MyRect, true); //refreshes rect
+                InvalidateRect(hwnd, &myRect, true); //refreshes rect
             }
         }}
     break;
