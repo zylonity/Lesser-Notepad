@@ -8,6 +8,8 @@
 #include <string> //i have no idea why this is in here
 #include <atlstr.h> //i wanna use cstring, i need to do more research on it
 
+
+
 using namespace std;
 wstring line;
 wfstream inputFile;
@@ -20,12 +22,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
     // Register the window class.
-    const wchar_t CLASS_NAME[]  = L"Sample Window Class";
-    
+    const wchar_t CLASS_NAME[] = L"Sample Window Class";
+
     WNDCLASS wc = { };
 
-    wc.lpfnWndProc   = WindowProc;
-    wc.hInstance     = hInstance;
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
 
     RegisterClass(&wc);
@@ -45,7 +47,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         NULL,       // Menu
         hInstance,  // Instance handle
         NULL        // Additional application data
-        );
+    );
 
     if (hwnd == NULL)
     {
@@ -55,15 +57,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     ShowWindow(hwnd, nCmdShow);
 
     // Messages are what the OS receives in input from the mouse or OS, so this deals with what the app is doing, if you change the size, or if you type something in.
+
     MSG msg = { };
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        //if (!TranslateAccelerator(win.Window(), hAccel, &msg))
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
     return 0;
 }
+
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -74,64 +79,64 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
 
     case WM_PAINT: //in charge of painting the window, everything that goes in the window goes here
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps); //the screen i think?
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps); //the screen i think?
 
-            //Puts a white background that updates with the window
-            FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1)); //COLOR_WINDOW is the default windows colours, adding sorts through them
-            
-            
-            inputFile.open("Text.txt"); // opens text file 
-            if (inputFile.is_open()) {
-                while (getline(inputFile, line)) //gets every line of the txt file, and loads it onto a wide string
-                {
-                    textString = textString + L'\n' + line;
-                }
+        //Puts a white background that updates with the window
+        FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1)); //COLOR_WINDOW is the default windows colours, adding sorts through them
 
+
+        inputFile.open("Text.txt"); // opens text file 
+        if (inputFile.is_open()) {
+            while (getline(inputFile, line)) //gets every line of the txt file, and loads it onto a wide string
+            {
+                textString = textString + L'\n' + line;
             }
-            else {
-                inputFile.close();
+
+        }
+        else {
+            inputFile.close();
+        }
+
+        SetTextColor(hdc, 0x00000000); // sets colour to black
+
+        GetClientRect(hwnd, &MyRect); //gets the rectangle and sets it to be the size of 
+        DrawTextExW( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
+            hdc,
+            &textString[0], //WhY DOES THIS WORK TO CONVERT A WSTRING INTO A LPWSTR
+            -1,
+            &MyRect,
+            DT_TOP | DT_WORDBREAK | DT_LEFT,
+            NULL
+        );
+
+        EndPaint(hwnd, &ps); // finished painting the window
+        return 0;
+    }
+
+    case WM_CHAR:
+    {
+
+        switch (wParam)
+        {
+        case VK_BACK: //Detects if backspace was pressed
+        {
+            if (textString.length() != 0) { //failsafe so you don't delete more characters than it has
+                textString.erase(textString.length() - 1); //deletes 1 character
+                InvalidateRect(hwnd, &MyRect, true); //refreshes rect
             }
-            
-            LPCWSTR temp = textString.c_str(); //converts the wide string into a LPCWSTR
-            SetTextColor(hdc, 0x00000000); // sets colour to black
-
-            GetClientRect(hwnd, &MyRect); //gets the rectangle and sets it to be the size of 
-            DrawText( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
-                hdc,
-                temp,
-                -1,
-                &MyRect,
-                DT_TOP | DT_WORDBREAK | DT_LEFT
-            );
-
-           
-
-            EndPaint(hwnd, &ps); // finished painting the window
-            return 0;
         }
-    case WM_KEYDOWN:
-        {
-        CString charInput((wchar_t)wParam);
-        wstring wCharInput(charInput);
-        textString = textString + wCharInput;
-        InvalidateRect(hwnd, &MyRect, true);
-            //switch (wParam) 
-            //{
-            //default:
-            //    
-            //}
-
-        }
-        break;
-    case WM_SYSDEADCHAR: 
-        {
-        NULL;
-        }
-        break;
+        default:
+            if (wParam != VK_BACK) {
+                CString charInput((wchar_t)wParam); //INPUT TO CSTRING, IDK WHAT IT DOES STILL
+                wstring wCharInput(charInput);//CString to Wstring, i mean it works
+                textString = textString + wCharInput; //adds character
+                InvalidateRect(hwnd, &MyRect, true); //refreshes rect
+            }
+        }}
+    break;
 
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
-
