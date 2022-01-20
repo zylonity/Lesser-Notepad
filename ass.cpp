@@ -37,7 +37,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     HWND hwnd = CreateWindowEx(
         0,                              // Optional window styles.
         CLASS_NAME,                     // Window class
-        L"Notepad-- The worse one of all!",    // Window text
+        L"Notepad for losers",    // Window text
         WS_OVERLAPPEDWINDOW,            // Window style
 
         // Size and position
@@ -100,7 +100,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         SetTextColor(hdc, 0x00000000); // sets colour to black
-        
+        HFONT aFont = CreateFontA(
+            0, //cHeight, height of cell/character
+            0, //cWidth, width of font
+            0, //cEscapement something graphics related?
+            0, //cOrientation, rotation??
+            0, //cWeight (boldness)
+            0, //bItalic italic font
+            0, //bUnderline underlined font
+            0, //bStrikeOut striked font
+            ANSI_CHARSET, //charset
+            0, //something about output
+            0, //i cba to note more stuff
+            0, //fuck off
+            0, // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
+            "Arial"
+        );
+
+        HGDIOBJ fontSelection = SelectObject(hdc, aFont);
         GetClientRect(hwnd, &myRect); //gets the rectangle and sets it to be the size of 
         DrawTextExW( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
             hdc,
