@@ -6,10 +6,14 @@
 #include <iostream> //deals with opening, reading and writing file
 #include <fstream> //specifies that I want to both read and write a file
 #include <string> //i have no idea why this is in here
+#include <atlstr.h> //i wanna use cstring, i need to do more research on it
 
 using namespace std;
 wstring line;
 wfstream inputFile;
+wstring textString;
+
+RECT MyRect; // makes a rectangle inside the window that text and things can go into
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -50,7 +54,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     ShowWindow(hwnd, nCmdShow);
 
-    // Messages are what the OS receives in input, so this deals with what the app is doing, if you change the size, or if you type something in.
+    // Messages are what the OS receives in input from the mouse or OS, so this deals with what the app is doing, if you change the size, or if you type something in.
     MSG msg = { };
     while (GetMessage(&msg, NULL, 0, 0))
     {
@@ -77,12 +81,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             //Puts a white background that updates with the window
             FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1)); //COLOR_WINDOW is the default windows colours, adding sorts through them
             
-            wstring test; 
+            
             inputFile.open("Text.txt"); // opens text file 
             if (inputFile.is_open()) {
                 while (getline(inputFile, line)) //gets every line of the txt file, and loads it onto a wide string
                 {
-                    test = test + L'\n' + line;
+                    textString = textString + L'\n' + line;
                 }
 
             }
@@ -90,9 +94,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 inputFile.close();
             }
             
-            LPCWSTR temp = test.c_str(); //converts the wide string into a LPCWSTR
+            LPCWSTR temp = textString.c_str(); //converts the wide string into a LPCWSTR
             SetTextColor(hdc, 0x00000000); // sets colour to black
-            RECT MyRect; // makes a rectangle inside the window that text and things can go into
+
             GetClientRect(hwnd, &MyRect); //gets the rectangle and sets it to be the size of 
             DrawText( // draws the text, an alternative to this is TextOut, but this one has a lot more formatting options
                 hdc,
@@ -107,7 +111,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             EndPaint(hwnd, &ps); // finished painting the window
             return 0;
         }
-        
+    case WM_KEYDOWN:
+        {
+        CString charInput((wchar_t)wParam);
+        wstring wCharInput(charInput);
+        textString = textString + wCharInput;
+        InvalidateRect(hwnd, &MyRect, true);
+            //switch (wParam) 
+            //{
+            //default:
+            //    
+            //}
+
+        }
+        break;
+    case WM_SYSDEADCHAR: 
+        {
+        NULL;
+        }
+        break;
 
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
