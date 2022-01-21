@@ -7,7 +7,7 @@
 #include <fstream> //specifies that I want to both read and write a file
 #include <string> //i have no idea why this is in here
 #include <atlstr.h> //i wanna use cstring, i need to do more research on it
-#include <Commdlg.h>
+#include <shobjidl_core.h> //browsing for files
 
 #define ID_Save 1
 #define ID_Open 2
@@ -20,9 +20,10 @@
 using namespace std;
 wstring line;
 wfstream inputFile;
+
+wstring inputFileLocation;
 wstring textString;
-OPENFILENAME ofn;
-WCHAR szFile[100];
+
 
 
 RECT myRect; // makes a rectangle inside the window that text and things can go into
@@ -97,20 +98,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     return 0;
 }
 
-wstring browse(HWND hwnd)
-{
-    wstring path(MAX_PATH, '\0');
-    OPENFILENAME ofn = { sizeof(OPENFILENAME) };
-    ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter =
-        L"Image files (*.jpg;*.png;*.bmp)\0*.jpg;*.png;*.bmp\0"
-        L"All files\0*.*\0";
-    ofn.lpstrFile = &path[0];
-    ofn.nMaxFile = MAX_PATH;
-    ofn.Flags = OFN_FILEMUSTEXIST;
-
-    return path;
-}
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -128,7 +115,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1)); //COLOR_WINDOW is the default windows colours, adding sorts through them
 
 
-        inputFile.open("Text.txt"); // opens text file 
+        inputFile.open(inputFileLocation); // opens text file 
         if (inputFile.is_open()) {
             while (getline(inputFile, line)) //gets every line of the txt file, and loads it onto a wide string
             {
@@ -137,7 +124,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         }
         else {
-            inputFile.close();
+            
         }
 
         SetTextColor(hdc, 0x00000000); // sets colour to black
@@ -200,9 +187,48 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (LOWORD(wParam) == ID_Exit) {
             exit(0);
         }
-        else if (LOWORD(wParam) == ID_Open) {
-            textString = textString + L"Your mum tried to open a file";
-            InvalidateRect(hwnd, &myRect, true); //refreshes rect
+        else if (LOWORD(wParam) == ID_Open) { //I copied the example to open the window from the docs, im sorry
+            HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
+                COINIT_DISABLE_OLE1DDE);
+            if (SUCCEEDED(hr))
+            {
+                IFileOpenDialog* pFileOpen;
+
+                // Create the FileOpenDialog object.
+                hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+                    IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+                if (SUCCEEDED(hr))
+                {
+                    // Show the Open dialog box.
+                    hr = pFileOpen->Show(NULL);
+
+                    // Get the file name from the dialog box.
+                    if (SUCCEEDED(hr))
+                    {
+                        IShellItem* pItem;
+                        hr = pFileOpen->GetResult(&pItem);
+                        if (SUCCEEDED(hr))
+                        {
+                            PWSTR pszFilePath;
+                            hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+                            // Display the file name to the user.
+                            if (SUCCEEDED(hr))
+                            {
+                                inputFileLocation = pszFilePath;
+                                CoTaskMemFree(pszFilePath);
+                                inputFile.close();
+                                InvalidateRect(hwnd, &myRect, true); //refreshes rect
+                            }
+                            pItem->Release();
+                        }
+                    }
+                    pFileOpen->Release();
+                }
+                CoUninitialize();
+            }
+            
         }
     }
         break;
