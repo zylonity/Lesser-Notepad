@@ -7,13 +7,16 @@
 #include <fstream> //specifies that I want to both read and write a file
 #include <string> //i have no idea why this is in here
 #include <atlstr.h> //i wanna use cstring, i need to do more research on it
-
+#include <Commdlg.h>
 
 
 using namespace std;
 wstring line;
 wfstream inputFile;
 wstring textString;
+OPENFILENAME ofn;
+WCHAR szFile[100];
+
 
 RECT myRect; // makes a rectangle inside the window that text and things can go into
 
@@ -34,17 +37,35 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     // Create the window.
 
+    HMENU hMenubar = CreateMenu();
+    HMENU hFile = CreateMenu();
+    HMENU hEdit = CreateMenu();
+    HMENU hHelp = CreateMenu();
+
+    AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hFile, L"File");
+    AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hEdit, L"Edit");
+    AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hHelp, L"Help");
+
+    AppendMenu(hFile, MF_STRING, NULL, L"Save");
+    AppendMenu(hFile, MF_STRING, NULL, L"Open");
+    AppendMenu(hFile, MF_STRING, NULL, L"Exit");
+
+    AppendMenu(hEdit, MF_STRING, NULL, L"Undo");
+    AppendMenu(hEdit, MF_STRING, NULL, L"Redo");
+
+    AppendMenu(hHelp, MF_STRING, NULL, L"You really need help to use this? Damn");
+
     HWND hwnd = CreateWindowEx(
         0,                              // Optional window styles.
         CLASS_NAME,                     // Window class
-        L"Notepad for losers",    // Window text
+        L"Notepad for losers",          // Window text
         WS_OVERLAPPEDWINDOW,            // Window style
 
         // Size and position
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 
         NULL,       // Parent window    
-        NULL,       // Menu
+        hMenubar,       // Menu
         hInstance,  // Instance handle
         NULL        // Additional application data
     );
@@ -69,6 +90,29 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     return 0;
 }
 
+string WINAPI selectFile(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+
+    // open a file name
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFile = szFile;
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    //GetOpenFileName(&ofn);
+
+    // Now simpley display the file name 
+    //MessageBox(NULL, ofn.lpstrFile, L"File Name", MB_OK);
+    return ofn;
+}
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -153,7 +197,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }}
     break;
-
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
