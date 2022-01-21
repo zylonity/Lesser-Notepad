@@ -9,6 +9,13 @@
 #include <atlstr.h> //i wanna use cstring, i need to do more research on it
 #include <Commdlg.h>
 
+#define ID_Save 1
+#define ID_Open 2
+#define ID_Exit 3
+#define ID_Undo 4
+#define ID_Redo 5
+#define ID_VWS 6 
+
 
 using namespace std;
 wstring line;
@@ -46,12 +53,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hEdit, L"Edit");
     AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hHelp, L"Help");
 
-    AppendMenu(hFile, MF_STRING, NULL, L"Save");
-    AppendMenu(hFile, MF_STRING, NULL, L"Open");
-    AppendMenu(hFile, MF_STRING, NULL, L"Exit");
+    AppendMenu(hFile, MF_STRING, ID_Save, L"Save");
+    AppendMenu(hFile, MF_STRING, ID_Open, L"Open");
+    AppendMenu(hFile, MF_STRING, ID_Exit, L"Exit");
 
-    AppendMenu(hEdit, MF_STRING, NULL, L"Undo");
-    AppendMenu(hEdit, MF_STRING, NULL, L"Redo");
+    AppendMenu(hEdit, MF_STRING, ID_Undo, L"Undo");
+    AppendMenu(hEdit, MF_STRING, ID_Redo, L"Redo");
 
     AppendMenu(hHelp, MF_STRING, NULL, L"You really need help to use this? Damn");
 
@@ -90,30 +97,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     return 0;
 }
 
-string WINAPI selectFile(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+wstring browse(HWND hwnd)
 {
-
-    // open a file name
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
+    wstring path(MAX_PATH, '\0');
+    OPENFILENAME ofn = { sizeof(OPENFILENAME) };
     ofn.hwndOwner = hwnd;
-    ofn.lpstrFile = szFile;
-    ofn.lpstrFile[0] = '\0';
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = NULL;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = NULL;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    ofn.lpstrFilter =
+        L"Image files (*.jpg;*.png;*.bmp)\0*.jpg;*.png;*.bmp\0"
+        L"All files\0*.*\0";
+    ofn.lpstrFile = &path[0];
+    ofn.nMaxFile = MAX_PATH;
+    ofn.Flags = OFN_FILEMUSTEXIST;
 
-    //GetOpenFileName(&ofn);
-
-    // Now simpley display the file name 
-    //MessageBox(NULL, ofn.lpstrFile, L"File Name", MB_OK);
-    return ofn;
+    return path;
 }
-
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -196,7 +193,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 InvalidateRect(hwnd, &myRect, true); //refreshes rect
             }
         }}
-    break;
+        break;
+    
+    case WM_COMMAND:
+    {
+        if (LOWORD(wParam) == ID_Exit) {
+            exit(0);
+        }
+        else if (LOWORD(wParam) == ID_Open) {
+            textString = textString + L"Your mum tried to open a file";
+            InvalidateRect(hwnd, &myRect, true); //refreshes rect
+        }
+    }
+        break;
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
