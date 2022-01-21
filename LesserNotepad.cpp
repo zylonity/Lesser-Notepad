@@ -123,9 +123,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
         }
-        else {
-            
-        }
 
         SetTextColor(hdc, 0x00000000); // sets colour to black
         HFONT aFont = CreateFontA(
@@ -186,6 +183,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (LOWORD(wParam) == ID_Exit) {
             exit(0);
+            inputFile.close();
         }
         else if (LOWORD(wParam) == ID_Open) { //I copied the example to open the window from the docs, im sorry
             HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
@@ -228,6 +226,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 CoUninitialize();
             }
+            
+        }
+        else if (LOWORD(wParam) == ID_Save) { //saving shit
+            wofstream inputFile(inputFileLocation); // opens text file 
+            if (inputFile.is_open()) {
+                inputFile << textString;
+                InvalidateRect(hwnd, &myRect, true);
+                inputFile.close();
+            }
+                
             
         }
     }
